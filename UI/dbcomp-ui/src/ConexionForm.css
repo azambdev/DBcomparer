@@ -1,0 +1,53 @@
+.form-container {
+    max-width: 20%; /* Ajusta el ancho máximo del contenedor del formulario */
+    margin: 0 auto; /* Centra horizontalmente el formulario en la página */
+    margin-top: 1%;
+  }
+
+
+  .form-title {
+    font-size: 25px !important; /* Ajusta el tamaño del texto del título */
+    font-weight: bold; /* Aplica negrita al texto del título */
+  }
+  
+  .form-input {
+    font-size: 10px; /* Ajusta el tamaño del texto del título */
+    font-weight: bold;
+  }
+  
+  .form-button {
+    top: 20px;
+  }
+
+  .form-button-compare {
+    left:1%;
+  }
+
+  .connection-status{
+    margin-top: 30px !important;
+  }
+
+  .diff-container
+  {
+   
+    border: 1px solid #ccc; /* Bordes externos del Accordion */
+    margin-bottom: 8px; /* Margen inferior entre los Accordions */
+   
+
+  }
+
+  .custom-accordion {
+    border: 1px solid #ccc; /* Bordes externos del Accordion */
+    margin-bottom: 8px; /* Margen inferior entre los Accordions */
+  }
+
+
+  .custom-accordion .MuiAccordionSummary-root {
+    border-bottom: 1px solid #ccc; /* Bordes internos del AccordionSummary */
+    padding: 8px 16px; /* Padding interno del AccordionSummary */
+  }
+
+
+  .custom-accordion .MuiAccordionDetails-root {
+    padding: 8px 16px; /* Padding interno del AccordionDetails */
+  }

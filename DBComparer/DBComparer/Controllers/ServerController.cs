@@ -1,0 +1,179 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DBComparer.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class ServerController : ControllerBase
+    {
+        // GET: ServerController
+
+        private readonly SqlServerChecker _sqlServerChecker;
+
+        public ServerController(SqlServerChecker sqlServerChecker)
+        {
+            _sqlServerChecker = sqlServerChecker;
+        }
+
+        [HttpGet("serverAddress")]
+        public IActionResult CheckServer([FromQuery]  string serverAddress)
+        {
+            bool serverExists = _sqlServerChecker.CheckServerExists(serverAddress);
+            return Ok(serverExists);
+        }
+
+        [HttpGet("serverAddressAndDb")]
+        public IActionResult CheckServerAndDatabase([FromQuery] string serverAddress, string databaseName)
+        {
+            bool serverExists = _sqlServerChecker.CheckServerAndDatabaseExists(serverAddress, databaseName);
+            return Ok(serverExists);
+        }
+
+
+
+        [HttpGet("{serverAddress}/{databaseName}/tables")]
+        public IActionResult GetDatabaseTables(string serverAddress, string databaseName)
+        {
+            List<string> tables = _sqlServerChecker.GetDatabaseTables(serverAddress, databaseName);
+            return Ok(tables);
+        }
+
+        [HttpGet("{serverAddress}/{databaseName}/table-schema")]
+        public IActionResult GetTableSchema(string serverAddress, string databaseName)
+        {
+            Dictionary<string, List<ColumnDefinition>> tableSchema = _sqlServerChecker.GetTableSchema(serverAddress, databaseName);
+            return Ok(tableSchema);
+        }
+
+
+
+        [HttpGet("{serverAddress}/{databaseName}/views")]
+        public IActionResult GetViews(string serverAddress, string databaseName)
+        {
+            var views = _sqlServerChecker.GetViews(serverAddress, databaseName);
+            return Ok(views);
+        }
+
+
+        [HttpGet("{serverAddress}/{databaseName}/views-schema")]
+        public IActionResult GetViewDefinitions(string serverAddress, string databaseName)
+        {
+            var viewDefinitions = _sqlServerChecker.GetViewDefinitions(serverAddress, databaseName);
+            return Ok(viewDefinitions);
+        }
+
+        [HttpGet("{serverAddress}/{databaseName}/proceduress")]
+        public IActionResult GetProcedures(string serverAddress, string databaseName)
+        {
+            var procedures = _sqlServerChecker.GetProcedures(serverAddress, databaseName);
+            return Ok(procedures);
+        }
+
+        [HttpGet("{serverAddress}/{databaseName}/procedures-schema")]
+        public IActionResult GetProceduresDefinitions(string serverAddress, string databaseName)
+        {
+            var proceduresDefinitions = _sqlServerChecker.GetAllStoredProcedureDefinitions(serverAddress, databaseName);
+            return Ok(proceduresDefinitions);
+        }
+
+
+        [HttpGet("compare-tables")]
+        public IActionResult GetTablesDifferences([FromQuery] string serverAddress1, string databaseName1, string serverAddress2, string databaseName2)
+        {
+
+            // Obtener las listas de tablas de ambos servidores y bases de datos
+            List<string> tables1 = _sqlServerChecker.GetDatabaseTables(serverAddress1, databaseName1);
+            List<string> tables2 = _sqlServerChecker.GetDatabaseTables(serverAddress2, databaseName2);
+
+            // Comparar las listas de tablas y obtener las tablas que faltan en cada servidor
+            List<string> missingTablesInServer1 = tables2.Except(tables1).ToList();
+            List<string> missingTablesInServer2 = tables1.Except(tables2).ToList();
+
+
+            // Comparar las definiciones de estructuras de tablas
+
+            List<string> differentTables = new List<string>();
+            foreach (string tableName in tables1.Intersect(tables2))
+            {
+                Dictionary<string, List<ColumnDefinition>> tableSchema1 = _sqlServerChecker.GetTableSchemaByTableName(serverAddress1, databaseName1, tableName);
+                Dictionary<string, List<ColumnDefinition>> tableSchema2 = _sqlServerChecker.GetTableSchemaByTableName(serverAddress2, databaseName2, tableName);
+
+
+                bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName], new ColumnDefinitionComparer());
+                // bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName]);
+
+                if (!listasIguales)
+
+
+                //if (tableSchema1 != tableSchema2)
+                {
+                    differentTables.Add(tableName);
+                }
+            }
+
+
+
+
+            // Construir el objeto de respuesta con los resultados
+            var response = new
+            {
+                MissingTablesInServer1 = missingTablesInServer1,
+                MissingTablesInServer2 = missingTablesInServer2,
+                DifferentTables = differentTables
+            };
+
+            return Ok(response);
+
+        }
+
+
+
+        [HttpGet("compare-table-definitions")]
+        public IActionResult CompareTableDefinitions(string serverAddress1, string databaseName1, string serverAddress2, string databaseName2)
+        {
+            // Obtener las listas de tablas de ambos servidores y bases de datos
+            List<string> tables1 = _sqlServerChecker.GetDatabaseTables(serverAddress1, databaseName1);
+            List<string> tables2 = _sqlServerChecker.GetDatabaseTables(serverAddress2, databaseName2);
+
+            // Comparar las definiciones de las tablas en ambos servidores
+            List<string> differentTables = new List<string>();
+            foreach (string tableName in tables1.Intersect(tables2))
+            {
+                Dictionary<string, List<ColumnDefinition>> tableSchema1 = _sqlServerChecker.GetTableSchemaByTableName(serverAddress1, databaseName1, tableName);
+                Dictionary<string, List<ColumnDefinition>> tableSchema2 = _sqlServerChecker.GetTableSchemaByTableName(serverAddress2, databaseName2, tableName);
+
+
+                bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName], new ColumnDefinitionComparer());
+                // bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName]);
+
+                if (!listasIguales)
+
+
+                //if (tableSchema1 != tableSchema2)
+                {
+                    differentTables.Add(tableName);
+                }
+            }
+
+            return Ok(differentTables);
+        }
+
+        public class ColumnDefinitionComparer : IEqualityComparer<ColumnDefinition>
+        {
+            public bool Equals(ColumnDefinition x, ColumnDefinition y)
+            {
+                // Implementa la lógica de comparación personalizada aquí.
+                // Por ejemplo, puedes comparar las propiedades relevantes de los objetos ColumnDefinition.
+                return x.ColumnName == y.ColumnName && x.DataType == y.DataType;
+            }
+
+            public int GetHashCode(ColumnDefinition obj)
+            {
+                // Implementa la generación del código hash aquí si es necesario.
+                return obj.GetHashCode();
+            }
+        }
+
+    }
+}
