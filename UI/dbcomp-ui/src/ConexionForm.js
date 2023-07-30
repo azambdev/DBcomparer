@@ -32,16 +32,22 @@ const  [is2Connected, setIs2Connected] = useState(false);
   const [missingTablesInServer2, setMissingTablesInServer2 ] = useState('');
   const [differentTablesFromServer, setdifferentTablesFromServer ] = useState('');
   const [differentTables, setdifferentTables ] = useState('');
+
+  const [missingViewsInServer1, setMissingViewsInServer1 ] = useState('');
+  const [missingViewsInServer2, setMissingViewsInServer2 ] = useState('');
+  const [differentViewsFromServer, setdifferentViewsFromServer ] = useState('');
+  const [differentViews, setdifferentViews ] = useState('');
+
+
+
   const handleConnect1 = async () => {
     try {
       axios.defaults.baseURL = 'https://localhost:7217/';
-      const response = await axios.get( `/Server/serverAddressAndDb?serverAddress=${serverAddress}&databaseName=${databaseName}`,
-    //  const response = await axios.get('https://localhost:7217/Server/',
-      
+      const response = await axios.get( `/Server/serverAddressAndDb?serverAddress=${serverAddress}&databaseName=${databaseName}`,       
       );
 
       console.log(response.data); // Aquí puedes manejar la respuesta de la API según tus necesidades
-      //alert(response.data);
+     
       if(response.data)  
       {setConnectionStatus('Conexión exitosa'); 
       setIs1Connected(true);
@@ -114,19 +120,37 @@ const  [is2Connected, setIs2Connected] = useState(false);
       //const result = await response.data.missingTablesInServer1.json();
 
 
-      const data = response.data; // Accede directamente a la propiedad 'data' de la respuesta
-    const missingTablesInServer1 = data.missingTablesInServer1;
+     const data = response.data; // Accede directamente a la propiedad 'data' de la respuesta
+     const missingTablesInServer1 = data.missingTablesInServer1;
      const missingTablesInServer2 = data.missingTablesInServer2;
      const differentTables = data.differentTables
-      const differences = [...missingTablesInServer1, ...missingTablesInServer2, ...differentTables];
+
+     const missingViewsInServer1 = data.missingViewsInServer1;
+     const missingViewsInServer2 = data.missingViewsInServer2;
+     const differentViews = data.differentViews
+
+
+
+
+     const differences = [...missingTablesInServer1, ...missingTablesInServer2, ...differentTables, ...missingViewsInServer1, ...missingViewsInServer2, ...differentViews];
       setTableDifferences(differences);
 
       setMissingTablesInServer1(missingTablesInServer1);
       setMissingTablesInServer2(missingTablesInServer2);
       setdifferentTablesFromServer(differentTables);
       setdifferentTables()
+
+      setMissingViewsInServer1(missingViewsInServer1);
+      setMissingViewsInServer2(missingViewsInServer2);
+      setdifferentViewsFromServer(differentViews);
+      setdifferentViews()
+
+
       // Acceder a los datos de las tablas faltantes
    
+
+
+
 
 
     //   setTableDifferences(missingTablesInServer2);
@@ -195,7 +219,8 @@ const  [is2Connected, setIs2Connected] = useState(false);
         </Box>
       )}
        <br></br>
-      {tableDifferences.length > 0 && (
+      {tableDifferences.length > 0 && 
+      (
             
           
 
@@ -225,61 +250,49 @@ const  [is2Connected, setIs2Connected] = useState(false);
         </ListItem>
       ))}
     </List>
+
   </AccordionDetails>
 </Accordion>
 
+ )}
 
+<br></br>
 
-
-
-
-
-
-
-
-
-
-
-
-/* 
-
-          <Accordion>
-   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-     <Typography variant="h6">Tablas</Typography>
-   </AccordionSummary>
-   <AccordionDetails>
-     <List>
-       {tableDifferences.map((table, index) => (
-         <ListItem key={index}>
-           <ListItemText primary={table} />
-         </ListItem>
-       ))}
-     </List>
-   </AccordionDetails>
- </Accordion>
-            
-             */
-            
-            
-            
-            
-            
-            // <Accordion>
-            //   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            //     <Typography variant="subtitle1">Tablas ({tableDifferences.length})</Typography>
-            //   </AccordionSummary>
-            //   <AccordionDetails>
-            //     <ul>
-            //       {tableDifferences.map((difference, index) => (
-            //         <li key={index}>{difference}</li>
-            //       ))}
-            //     </ul>
-            //   </AccordionDetails>
-            // </Accordion>
-          )}
+{tableDifferences.length > 0 && 
+      (
+<Accordion className='custom-accordion'>
+<AccordionSummary className='custom-accordion-summary2 ' expandIcon={<ExpandMoreIcon />}>
+    <Typography variant="h6">Views</Typography>
+  </AccordionSummary>
+  <AccordionDetails className="custom-accordion-details2">
+    <List >
+      <ListSubheader>Faltantes en Servidor 1:</ListSubheader>
+      {missingViewsInServer1.map((viewName, index) => (
+        <ListItem  key={index}>
+          <ListItemText primary={viewName} />
+        </ListItem>
+      ))}
+      <ListSubheader>Faltantes en Servidor 2:</ListSubheader>
+      {missingViewsInServer2.map((viewName, index) => (
+        <ListItem key={index}>
+          <ListItemText primary={viewName} />
+        </ListItem>
+      ))}
+      <ListSubheader>Diferencias:</ListSubheader>
+      {differentViewsFromServer.map((viewName, index) => (
+        <ListItem key={index}>
+          <ListItemText primary={viewName} />
+        </ListItem>
+      ))}
+    </List>
+  </AccordionDetails>
+</Accordion>
+      )},
 
   </div>
+ 
   );
+
 };
 
 export default ConexionForm;
