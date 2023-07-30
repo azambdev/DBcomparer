@@ -3,8 +3,15 @@ import axios from 'axios';
 import {Box, Grid,TextField, Divider, Button, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, ListSubheader  } from '@mui/material';
 import './ConexionForm.css'; // Archivo de estilos CSS personalizados
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { saveAs } from 'file-saver';
+
+
+
+  
+
 
 const ConexionForm = () => {
+
   const [serverAddress, setServerAddress] = useState('');
   const [databaseName, setDatabaseName] = useState('');
 
@@ -43,6 +50,54 @@ const  [is2Connected, setIs2Connected] = useState(false);
   const [differentStoredProcsFromServer, setdifferentStoredProcsFromServer ] = useState('');
   const [differentStoredProcs, setdifferentStoredProcs ] = useState('');
 
+
+  const accordionContent = `Resumen:
+  Origen 1: ${serverAddress} - ${databaseName}
+  Origen 2: ${serverAddress2} - ${databaseName2}
+  
+  ----------Tablas----------
+  Faltantes en ${databaseName}:
+  ${missingTablesInServer1}
+
+  Faltantes en ${databaseName2}:
+  ${missingTablesInServer2}
+
+  Diferencias:
+  ${differentTablesFromServer}
+
+  ----------Vistas----------
+
+  Faltantes en ${databaseName}:
+  ${missingViewsInServer1}
+
+  Faltantes en ${databaseName2}:
+  ${missingViewsInServer2}
+
+  Diferencias:
+  ${differentViewsFromServer}
+
+
+
+  ----------Stored Procedures----------
+
+  Faltantes en ${databaseName}:
+  ${missingStoredProcsInServer1}
+
+  Faltantes en ${databaseName2}:
+  ${missingStoredProcsInServer2}
+
+  Diferencias:
+  ${differentStoredProcsFromServer}
+
+  `;
+
+  const currentDate = new Date().toISOString().slice(0, 10);
+  const fileName = `DBCompare_${currentDate}.txt`;
+
+  const handleDownloadClick = () => {
+    const blob = new Blob([accordionContent], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, fileName);
+  };
 
   const handleConnect1 = async () => {
     try {
@@ -335,7 +390,9 @@ const  [is2Connected, setIs2Connected] = useState(false);
       )},
 
 
-
+<Button variant="contained" color="primary" onClick={handleDownloadClick}>
+        Descargar
+      </Button>
 
 
 
