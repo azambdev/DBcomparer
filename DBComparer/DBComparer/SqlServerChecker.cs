@@ -361,6 +361,38 @@ namespace DBComparer
 
 
 
+        public string GetStoredProcedureDefinition(string serverName, string databaseName, string storedProcedureName)
+        {
+            string connectionString = $"Data Source={serverName};Initial Catalog={databaseName};Integrated Security=true;";
+
+            string query = "SELECT OBJECT_DEFINITION(OBJECT_ID(@StoredProcedureName)) AS StoredProcedureDefinition";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@StoredProcedureName", storedProcedureName);
+
+                try
+                {
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return result.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Manejo de errores aquí (por ejemplo, registrar el error)
+                    throw;
+                }
+            }
+
+            return null; // Si no se encuentra la definición del stored procedure, retorna null
+        }
+
+
+
         public Dictionary<string, string> GetAllStoredProcedureDefinitions(string serverAddress, string databaseName)
         {
             Dictionary<string, string> storedProcedureDefinitions = new Dictionary<string, string>();

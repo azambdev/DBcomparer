@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import {Box, Grid,TextField, Button, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, ListSubheader  } from '@mui/material';
+import {Box, Grid,TextField, Divider, Button, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, ListSubheader  } from '@mui/material';
 import './ConexionForm.css'; // Archivo de estilos CSS personalizados
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -38,6 +38,10 @@ const  [is2Connected, setIs2Connected] = useState(false);
   const [differentViewsFromServer, setdifferentViewsFromServer ] = useState('');
   const [differentViews, setdifferentViews ] = useState('');
 
+  const [missingStoredProcsInServer1, setMissingStoredProcsInServer1 ] = useState('');
+  const [missingStoredProcsInServer2, setMissingStoredProcsInServer2 ] = useState('');
+  const [differentStoredProcsFromServer, setdifferentStoredProcsFromServer ] = useState('');
+  const [differentStoredProcs, setdifferentStoredProcs ] = useState('');
 
 
   const handleConnect1 = async () => {
@@ -123,16 +127,18 @@ const  [is2Connected, setIs2Connected] = useState(false);
      const data = response.data; // Accede directamente a la propiedad 'data' de la respuesta
      const missingTablesInServer1 = data.missingTablesInServer1;
      const missingTablesInServer2 = data.missingTablesInServer2;
-     const differentTables = data.differentTables
+     const differentTables = data.differentTables;
 
      const missingViewsInServer1 = data.missingViewsInServer1;
      const missingViewsInServer2 = data.missingViewsInServer2;
-     const differentViews = data.differentViews
+     const differentViews = data.differentViews;
 
 
+     const missingStoredProcsInServer1 = data.missingStoredProcsInServer1;
+     const missingStoredProcsInServer2 = data.missingStoredProcsInServer2;
+     const differentStoredProcs = data.differentStoredProcs;
 
-
-     const differences = [...missingTablesInServer1, ...missingTablesInServer2, ...differentTables, ...missingViewsInServer1, ...missingViewsInServer2, ...differentViews];
+     const differences = [...missingTablesInServer1, ...missingTablesInServer2, ...differentTables, ...missingViewsInServer1, ...missingViewsInServer2, ...differentViews, ...missingStoredProcsInServer1, ...missingStoredProcsInServer2, ...differentStoredProcs];
       setTableDifferences(differences);
 
       setMissingTablesInServer1(missingTablesInServer1);
@@ -144,6 +150,12 @@ const  [is2Connected, setIs2Connected] = useState(false);
       setMissingViewsInServer2(missingViewsInServer2);
       setdifferentViewsFromServer(differentViews);
       setdifferentViews()
+
+      setMissingStoredProcsInServer1(missingStoredProcsInServer1);
+      setMissingStoredProcsInServer2(missingStoredProcsInServer2);
+      setdifferentStoredProcsFromServer(differentStoredProcs);
+      setdifferentStoredProcs()
+
 
 
       // Acceder a los datos de las tablas faltantes
@@ -256,10 +268,10 @@ const  [is2Connected, setIs2Connected] = useState(false);
 
  )}
 
-<br></br>
 
 {tableDifferences.length > 0 && 
       (
+        
 <Accordion className='custom-accordion'>
 <AccordionSummary className='custom-accordion-summary2 ' expandIcon={<ExpandMoreIcon />}>
     <Typography variant="h6">Views</Typography>
@@ -287,7 +299,46 @@ const  [is2Connected, setIs2Connected] = useState(false);
     </List>
   </AccordionDetails>
 </Accordion>
+      )}
+
+
+{tableDifferences.length > 0 && 
+      (
+        
+<Accordion className='custom-accordion'>
+<AccordionSummary className='custom-accordion-summary2 ' expandIcon={<ExpandMoreIcon />}>
+    <Typography variant="h6">Stored Procedures</Typography>
+  </AccordionSummary>
+  <AccordionDetails className="custom-accordion-details2">
+    <List >
+      <ListSubheader>Faltantes en Servidor 1:</ListSubheader>
+      {missingStoredProcsInServer1.map((storedProcName, index) => (
+        <ListItem  key={index}>
+          <ListItemText primary={storedProcName} />
+        </ListItem>
+      ))}
+      <ListSubheader>Faltantes en Servidor 2:</ListSubheader>
+      {missingStoredProcsInServer2.map((storedProcName, index) => (
+        <ListItem key={index}>
+          <ListItemText primary={storedProcName} />
+        </ListItem>
+      ))}
+      <ListSubheader>Diferencias:</ListSubheader>
+      {differentStoredProcsFromServer.map((storedProcName, index) => (
+        <ListItem key={index}>
+          <ListItemText primary={storedProcName} />
+        </ListItem>
+      ))}
+    </List>
+  </AccordionDetails>
+</Accordion>
       )},
+
+
+
+
+
+
 
   </div>
  

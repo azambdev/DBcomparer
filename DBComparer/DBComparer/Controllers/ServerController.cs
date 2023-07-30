@@ -118,9 +118,7 @@ namespace DBComparer.Controllers
 
             #endregion
 
-            #region Views
-
-            
+            #region Views                     
 
             // Obtener las listas de vistas de ambos servidores y bases de datos
             List<string> views1 = _sqlServerChecker.GetViews(serverAddress1, databaseName1);
@@ -129,7 +127,6 @@ namespace DBComparer.Controllers
             // Comparar las listas de tablas y obtener las tablas que faltan en cada servidor
             List<string> missingViewsInServer1 = views2.Except(views1).ToList();
             List<string> missingViewsInServer2 = views1.Except(views2).ToList();
-
 
             // Comparar las definiciones de vistas
 
@@ -144,7 +141,6 @@ namespace DBComparer.Controllers
 
                 if (!listasIguales)
 
-
                 //if (tableSchema1 != tableSchema2)
                 {
                     differentViews.Add(viewName);
@@ -155,9 +151,41 @@ namespace DBComparer.Controllers
 
 
 
+            #region Stored Procedures
+
+            // Obtener las listas de stored procedures de ambos servidores y bases de datos
+            List<string> storedprocs1 = _sqlServerChecker.GetProcedures(serverAddress1, databaseName1);
+            List<string> storedprocs2 = _sqlServerChecker.GetProcedures(serverAddress2, databaseName2);
+
+            // Comparar las listas de stored procs y obtener los que faltan en cada servidor
+            List<string> missingStoredProcsInServer1 = storedprocs2.Except(storedprocs1).ToList();
+            List<string> missingStoredProcsInServer2 = storedprocs1.Except(storedprocs2).ToList();
+
+            // Comparar las definiciones de stored procs
+
+            List<string> differentStoredProcs = new List<string>();
+            foreach (string storedprocName in storedprocs1.Intersect(storedprocs2))
+            {
+                string storedProcSchema1 = _sqlServerChecker.GetStoredProcedureDefinition(serverAddress1, databaseName1, storedprocName);
+                string storedProcSchema2 = _sqlServerChecker.GetStoredProcedureDefinition(serverAddress2, databaseName2, storedprocName);
+
+                bool listasIguales = string.Equals(storedProcSchema1, storedProcSchema2, StringComparison.OrdinalIgnoreCase);//storedProcSchema1.Trim().SequenceEqual(storedProcSchema2.Trim());
+                // bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName]);
+
+                if (!listasIguales)
+
+                //if (tableSchema1 != tableSchema2)
+                {
+                    differentStoredProcs.Add(storedprocName);
+                }
+            }
+                        
+
+            #endregion
+
 
             #region Final Response
-                       
+
 
             // Construir el objeto de respuesta con los resultados
             var response = new
@@ -169,9 +197,11 @@ namespace DBComparer.Controllers
 
                 MissingViewsInServer1 = missingViewsInServer1,
                 MissingViewsInServer2 = missingViewsInServer2,
-                DifferentViews = differentViews
+                DifferentViews = differentViews,
 
-
+                MissingStoredProcsInServer1 = missingStoredProcsInServer1,
+                MissingStoredProcsInServer2 = missingStoredProcsInServer2,
+                DifferentStoredProcs = differentStoredProcs
 
             };
 
