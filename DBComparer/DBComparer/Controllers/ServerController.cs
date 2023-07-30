@@ -82,6 +82,10 @@ namespace DBComparer.Controllers
         public IActionResult GetTablesDifferences([FromQuery] string serverAddress1, string databaseName1, string serverAddress2, string databaseName2)
         {
 
+            #region Tables
+
+           
+
             // Obtener las listas de tablas de ambos servidores y bases de datos
             List<string> tables1 = _sqlServerChecker.GetDatabaseTables(serverAddress1, databaseName1);
             List<string> tables2 = _sqlServerChecker.GetDatabaseTables(serverAddress2, databaseName2);
@@ -112,18 +116,68 @@ namespace DBComparer.Controllers
                 }
             }
 
+            #endregion
+
+            #region Views
+
+            
+
+            // Obtener las listas de vistas de ambos servidores y bases de datos
+            List<string> views1 = _sqlServerChecker.GetViews(serverAddress1, databaseName1);
+            List<string> views2 = _sqlServerChecker.GetViews(serverAddress2, databaseName2);
+
+            // Comparar las listas de tablas y obtener las tablas que faltan en cada servidor
+            List<string> missingViewsInServer1 = views2.Except(views1).ToList();
+            List<string> missingViewsInServer2 = views1.Except(views2).ToList();
 
 
+            // Comparar las definiciones de vistas
+
+            List<string> differentViews = new List<string>();
+            foreach (string viewName in views1.Intersect(views2))
+            {
+                string viewSchema1 = _sqlServerChecker.GetViewDefinition(serverAddress1, databaseName1, viewName);
+                string viewSchema2 = _sqlServerChecker.GetViewDefinition(serverAddress2, databaseName2, viewName);
+
+                bool listasIguales = viewSchema1.Trim().SequenceEqual(viewSchema2.Trim());
+                // bool listasIguales = tableSchema1[tableName].SequenceEqual(tableSchema2[tableName]);
+
+                if (!listasIguales)
+
+
+                //if (tableSchema1 != tableSchema2)
+                {
+                    differentViews.Add(viewName);
+                }
+            }
+
+            #endregion
+
+
+
+
+            #region Final Response
+                       
 
             // Construir el objeto de respuesta con los resultados
             var response = new
             {
                 MissingTablesInServer1 = missingTablesInServer1,
                 MissingTablesInServer2 = missingTablesInServer2,
-                DifferentTables = differentTables
+                DifferentTables = differentTables,
+
+
+                MissingViewsInServer1 = missingViewsInServer1,
+                MissingViewsInServer2 = missingViewsInServer2,
+                DifferentViews = differentViews
+
+
+
             };
 
             return Ok(response);
+
+            #endregion
 
         }
 

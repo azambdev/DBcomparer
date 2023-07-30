@@ -299,6 +299,40 @@ namespace DBComparer
 
 
 
+
+        public string GetViewDefinition(string serverName, string databaseName, string viewName)
+        {
+            string connectionString = $"Data Source={serverName};Initial Catalog={databaseName};Integrated Security=true;";
+
+            string query = "SELECT OBJECT_DEFINITION(OBJECT_ID(@ViewName)) AS ViewDefinition";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@ViewName", viewName);
+
+                try
+                {
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return result.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Manejo de errores aquí (por ejemplo, registrar el error)
+                    throw;
+                }
+            }
+
+            return null; // Si no se encuentra la definición de la vista, retorna null
+        }
+
+
+
+
         public List<string> GetProcedures(string serverAddress, string databaseName)
         {
             List<string> storedProcedures = new List<string>();
